@@ -224,6 +224,11 @@ _D('Wireless Illuminated Keyboard K800 new', codename='K800 new', protocol=4.5, 
 							_FS.fn_swap()
 						],
 				)
+_D('Wireless Illuminated Keyboard MX Keys', codename='MX Keys', protocol=4.5, wpid='408A',
+   				settings=[
+	   						_FS.fn_swap()
+   						],
+   				)
 _D('Illuminated Living-Room Keyboard K830', protocol=2.0, wpid='4032',
 				settings=[
 							_FS.new_fn_swap()
