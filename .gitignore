@@ -16,3 +16,4 @@ __pycache__/
 /share/locale/
 /.idea/
 /venv/
+.gitignore
