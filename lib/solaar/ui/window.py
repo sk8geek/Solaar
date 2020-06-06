@@ -618,6 +618,9 @@ def _update_device_panel(device, panel, buttons, full=False):
 	panel.set_sensitive(is_online)
 
 	battery_level = device.status.get(_K.BATTERY_LEVEL)
+	battery_next_level = device.status.get(_K.BATTERY_NEXT_LEVEL)
+	battery_voltage = device.status.get(_K.BATTERY_VOLTAGE)
+
 	if battery_level is None:
 		icon_name = _icons.battery()
 		panel._battery._icon.set_sensitive(False)
@@ -630,10 +633,17 @@ def _update_device_panel(device, panel, buttons, full=False):
 		panel._battery._icon.set_from_icon_name(icon_name, _INFO_ICON_SIZE)
 		panel._battery._icon.set_sensitive(True)
 
-		if isinstance(battery_level, _NamedInt):
+		if battery_voltage is not None:
+			text = "%(battery_voltage)dmV" % { 'battery_voltage' : battery_voltage }
+		elif isinstance(battery_level, _NamedInt):
 			text = _(str(battery_level))
 		else:
-			text = _("%(battery_percent)d%%") % { 'battery_percent': battery_level }
+			text = "%(battery_percent)d%%" % { 'battery_percent': battery_level }
+		if battery_next_level is not None:
+			if isinstance(battery_next_level, _NamedInt):
+				text += "<small> (" +_("next ") + _(str(battery_next_level)) + ")</small>"
+			else:
+				text += "<small> (" + _("next ") + ( "%d%%" % battery_next_level ) + ")</small>"
 		if is_online:
 			if charging:
 				text += ' <small>(%s)</small>' % _("charging")
@@ -812,14 +822,17 @@ def update(device, need_popup=False):
 			_model.set_value(item, _COLUMN.ACTIVE, is_online)
 
 			battery_level = device.status.get(_K.BATTERY_LEVEL)
+			battery_voltage = device.status.get(_K.BATTERY_VOLTAGE)
 			if battery_level is None:
 				_model.set_value(item, _COLUMN.STATUS_TEXT, _CAN_SET_ROW_NONE)
 				_model.set_value(item, _COLUMN.STATUS_ICON, _CAN_SET_ROW_NONE)
 			else:
-				if isinstance(battery_level, _NamedInt):
-					status_text = _("%(battery_level)s") % { 'battery_level': _(str(battery_level)) }
+				if battery_voltage is not None:
+					status_text = "%(battery_voltage)dmV" % { 'battery_voltage' : battery_voltage }
+				elif isinstance(battery_level, _NamedInt):
+					status_text = _(str(battery_level))
 				else:
-					status_text = _("%(battery_percent)d%%") % { 'battery_percent': battery_level }
+					status_text = "%(battery_percent)d%%" % { 'battery_percent': battery_level }
 				_model.set_value(item, _COLUMN.STATUS_TEXT, status_text)
 
 				charging = device.status.get(_K.BATTERY_CHARGING)

@@ -25,6 +25,7 @@ from logitech_receiver import (
 				hidpp20 as _hidpp20,
 				special_keys as _special_keys,
 			)
+from logitech_receiver.common import NamedInt as _NamedInt
 
 
 def _print_receiver(receiver):
@@ -56,6 +57,13 @@ def _print_receiver(receiver):
 		activity_text = ', '.join(('%d=%d' % (d, a)) for d, a in activity if a > 0)
 		print ('  Device activity counters:', activity_text or '(empty)')
 
+def _battery_text(level) :
+	if level is None:
+		return 'N/A'
+	elif isinstance(level, _NamedInt):
+		return str(level)
+	else:
+		return '%d%%' % level
 
 def _print_device(dev):
 	assert dev
@@ -173,21 +181,15 @@ def _print_device(dev):
 		if battery is None:
 			battery = _hidpp10.get_battery(dev)
 		if battery is not None:
-			from logitech_receiver.common import NamedInt as _NamedInt
-			level, status = battery
-			if level is not None:
-				if isinstance(level, _NamedInt):
-					text = str(level)
-				else:
-					text = '%d%%' % level
-			else:
-				text = 'N/A'
-			print ('     Battery: %s, %s.' % (text, status))
+			level, status, nextLevel = battery
+			text = _battery_text(level)
+			nextText = '' if nextLevel is None else ', next level ' +_battery_text(nextLevel)
+			print ('     Battery: %s, %s%s.' % (text, status, nextText))
 		else:
 			battery_voltage = _hidpp20.get_voltage(dev)
 			if battery_voltage :
-				(voltage, charging, charge_sts, charge_lvl, charge_type) = battery_voltage
-				print ('     Battery: %smV, %s.' % (voltage, 'Charging' if charging else 'Discharging'))
+				(level, status, voltage, charge_sts, charge_type) = battery_voltage
+				print ('     Battery: %smV, %s, %s.' % (voltage, status, level))
 			else:
 				print ('     Battery status unavailable.')
 	else:
